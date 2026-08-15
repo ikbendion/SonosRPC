@@ -1,11 +1,15 @@
-"""Orchestrates config, Sonos polling, Discord RPC and the tray icon."""
+"""Orchestrates config, Sonos polling, Discord RPC and the tray icon.
+
+Logging is set up by main.py before this module is even imported (see its
+module docstring for why), so this module just gets a logger and assumes
+a handler is already attached to the root logger.
+"""
 import logging
-import logging.handlers
 import threading
 import time
 
 from . import DISPLAY_NAME
-from .config import get_log_path, load_config, save_config
+from .config import load_config, save_config
 from .dialogs import ask_discord_client_id, ask_poll_interval, select_speaker, show_message
 from .discord_rpc import DiscordRPCManager
 from .metadata import normalize
@@ -19,16 +23,6 @@ log = logging.getLogger(__name__)
 
 DISCORD_RETRY_SECONDS = 15
 PLAYING_STATES = {"PLAYING"}
-
-
-def setup_logging() -> None:
-    handler = logging.handlers.RotatingFileHandler(
-        get_log_path(), maxBytes=1_000_000, backupCount=2, encoding="utf-8"
-    )
-    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
-    root = logging.getLogger()
-    root.setLevel(logging.INFO)
-    root.addHandler(handler)
 
 
 class App:
@@ -195,7 +189,6 @@ class App:
 
     # -------------------------------------------------------------- run
     def run(self) -> None:
-        setup_logging()
         log.info("Starting %s", DISPLAY_NAME)
 
         self._ensure_configured()
