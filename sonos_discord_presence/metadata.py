@@ -60,6 +60,8 @@ class NormalizedTrack:
     raw_title: str = ""
     raw_artist: str = ""
     is_spotify: bool = False
+    position_seconds: int = 0
+    duration_seconds: int = 0
 
 
 def _clean(value) -> str:
@@ -71,6 +73,21 @@ def _clean(value) -> str:
     return value
 
 
+def _duration_to_seconds(value) -> int:
+    value = _clean(value)
+    if not value:
+        return 0
+    parts = value.split(":")
+    try:
+        parts = [int(p) for p in parts]
+    except ValueError:
+        return 0
+    seconds = 0
+    for part in parts:
+        seconds = seconds * 60 + part
+    return seconds
+
+
 def normalize(track_info: dict) -> NormalizedTrack:
     """Turn a soco `get_current_track_info()` dict into Discord-ready text."""
     uri = _clean(track_info.get("uri"))
@@ -80,6 +97,8 @@ def normalize(track_info: dict) -> NormalizedTrack:
     artist = _clean(track_info.get("artist"))
     album = _clean(track_info.get("album"))
     album_art_url = _clean(track_info.get("album_art"))
+    position_seconds = _duration_to_seconds(track_info.get("position"))
+    duration_seconds = _duration_to_seconds(track_info.get("duration"))
 
     if source_type == SourceType.STREAMING:
         details = title or UNKNOWN_TITLE
@@ -122,4 +141,6 @@ def normalize(track_info: dict) -> NormalizedTrack:
         raw_title=title,
         raw_artist=artist,
         is_spotify=uri.startswith("x-sonos-spotify:"),
+        position_seconds=position_seconds,
+        duration_seconds=duration_seconds,
     )

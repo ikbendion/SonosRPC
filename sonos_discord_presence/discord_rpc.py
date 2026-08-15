@@ -8,6 +8,7 @@ that case and fall back to a pre-uploaded generic asset key.
 import ipaddress
 import logging
 import socket
+import time
 from urllib.parse import urlparse
 
 from pypresence import Presence
@@ -86,12 +87,23 @@ class DiscordRPCManager:
             else self.fallback_image_key
         )
 
+        # Recomputed from the speaker's actual position on every call (not
+        # cached from when the track started) so the bar stays right even
+        # after a seek, or if a poll gets delayed. No `end` -- and so no
+        # progress bar, just a running clock -- when duration is unknown
+        # (radio streams, live playback).
+        now = int(time.time())
+        start = now - track.position_seconds
+        end = start + track.duration_seconds if track.duration_seconds > 0 else None
+
         try:
             self._rpc.update(
                 details=track.details,
                 state=track.state,
                 large_image=image_key,
                 large_text="Sonos Discord Presence",
+                start=start,
+                end=end,
             )
             return True
         except PipeClosed:
