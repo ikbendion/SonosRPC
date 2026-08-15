@@ -81,6 +81,18 @@ a single-user tray utility with no shared-machine use case, and the
 admin-free), so a `Program Files` install would only add elevation
 friction with no corresponding benefit.
 
+### CI: automated builds and releases
+
+`.github/workflows/release.yml` builds the exe and installer on
+`windows-latest` and publishes them to a GitHub Release. It runs on:
+
+- **Pushing a tag** matching `v*.*.*` (e.g. `git tag v2.0.1 && git push origin v2.0.1`).
+- **Manual dispatch** from the Actions tab, where you supply the release tag to use.
+
+Either way it produces a release with `SonosDiscordPresence.exe` (the raw
+onefile build) and `SonosDiscordPresence-Setup.exe` (the installer, built
+with its version set to match the release tag) attached as assets.
+
 The installer also:
 - Adds a Start Menu shortcut (and an uninstall shortcut).
 - Offers a **"Launch automatically when Windows starts"** checkbox, which

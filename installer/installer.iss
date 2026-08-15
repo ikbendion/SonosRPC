@@ -9,7 +9,9 @@
 ;   iscc installer\installer.iss
 
 #define MyAppName "Sonos Discord Presence"
-#define MyAppVersion "2.0.0"
+#ifndef MyAppVersion
+  #define MyAppVersion "2.0.0"
+#endif
 #define MyAppPublisher "ikbendion"
 #define MyAppExeName "SonosDiscordPresence.exe"
 #define MyAppUrl "https://github.com/ikbendion/sonosrpc"
