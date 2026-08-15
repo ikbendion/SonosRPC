@@ -11,6 +11,10 @@ Run once (`python assets/generate_icons.py`) to (re)create:
 These are intentionally simple so the app has no missing-asset failures
 out of the box; swap them for real artwork whenever you like, keeping the
 same filenames.
+
+No filled backdrop shape on purpose -- fully transparent outside the
+glyph itself, so it blends into whatever it's placed on (Windows taskbar,
+Discord's dark presence card, etc.) instead of showing as a colored disc.
 """
 import os
 
@@ -18,7 +22,6 @@ from PIL import Image, ImageDraw
 
 ASSETS_DIR = os.path.dirname(os.path.abspath(__file__))
 
-SONOS_BLACK = (17, 17, 17, 255)
 ACCENT_WHITE = (255, 255, 255, 255)
 ERROR_RED = (220, 53, 69, 255)
 
@@ -26,14 +29,11 @@ ERROR_RED = (220, 53, 69, 255)
 def _base_speaker_icon(size: int, ring_color) -> Image.Image:
     img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
-    margin = size * 0.08
-    draw.ellipse([margin, margin, size - margin, size - margin], fill=SONOS_BLACK)
-    for radius_frac in (0.34, 0.22, 0.10):
-        r = size * radius_frac
-        cx = cy = size / 2
-        draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline=ring_color, width=max(1, int(size * 0.035)))
-    dot_r = size * 0.05
     cx = cy = size / 2
+    for radius_frac in (0.42, 0.28, 0.14):
+        r = size * radius_frac
+        draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline=ring_color, width=max(1, int(size * 0.045)))
+    dot_r = size * 0.06
     draw.ellipse([cx - dot_r, cy - dot_r, cx + dot_r, cy + dot_r], fill=ring_color)
     return img
 

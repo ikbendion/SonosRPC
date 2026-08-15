@@ -76,7 +76,7 @@ class DiscordRPCManager:
             self._rpc = None
             return False
 
-    def update(self, track: NormalizedTrack, start_timestamp: int) -> bool:
+    def update(self, track: NormalizedTrack) -> bool:
         if not self._connected:
             return False
 
@@ -92,7 +92,6 @@ class DiscordRPCManager:
                 state=track.state,
                 large_image=image_key,
                 large_text="Sonos Discord Presence",
-                start=start_timestamp,
             )
             return True
         except PipeClosed:

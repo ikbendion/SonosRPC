@@ -34,8 +34,6 @@ class App:
 
         self._lock = threading.RLock()
         self._stop_event = threading.Event()
-        self._current_track_key = None
-        self._playing_start_ts = None
         self._idle_since = None
 
     # ---------------------------------------------------------------- setup
@@ -98,8 +96,6 @@ class App:
             self.cfg["speaker_name"] = chosen.name
             self.cfg["speaker_ip"] = chosen.ip_address
             save_config(self.cfg)
-            self._current_track_key = None
-            self._playing_start_ts = None
             self._idle_since = None
         self._restart_poller()
         if self.tray:
@@ -143,16 +139,12 @@ class App:
         with self._lock:
             if transport_state in PLAYING_STATES:
                 self._idle_since = None
-                track_key = (track.details, track.state, track_info.get("uri"))
-                if track_key != self._current_track_key:
-                    self._current_track_key = track_key
-                    self._playing_start_ts = int(time.time())
 
                 if self.discord and not self.discord.connected:
                     self.discord.connect()
 
                 if self.discord and self.discord.connected:
-                    self.discord.update(track, self._playing_start_ts)
+                    self.discord.update(track)
                     if self.tray:
                         self.tray.set_status(f"Playing: {track.details}", TrayState.OK)
                 elif self.tray:
@@ -170,7 +162,6 @@ class App:
                         self.discord.clear()
                     if self.tray:
                         self.tray.set_status("Idle", TrayState.IDLE)
-                    self._current_track_key = None
                 elif self.tray:
                     self.tray.set_status(f"Paused: {track.details}", TrayState.IDLE)
 
