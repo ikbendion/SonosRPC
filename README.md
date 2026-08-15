@@ -138,6 +138,23 @@ local one. This only applies to Spotify; other streaming services (Apple
 Music, Amazon Music, etc.) still fall back to the generic asset, since
 they don't have an equivalent free public lookup.
 
+### Real album art for SoundCloud (optional, requires existing credentials)
+
+Same underlying problem as Spotify, but SoundCloud closed public API
+registration years ago, so there's no "create a free app" path for new
+credentials. This only does anything if you already hold a client_id for
+SoundCloud's `api-v2` endpoint (the one their own web player uses — not
+an officially documented third-party API, so treat this as best-effort
+and something that can break if SoundCloud changes it). If you have one,
+enter it via **Settings...** (leave blank to leave it off).
+
+Sonos doesn't give SoundCloud its own URI scheme the way it does for
+Spotify, so SoundCloud tracks are only distinguishable as "some generic
+streaming service" — this lookup is tried for any non-Spotify streaming
+track when a client_id is configured, and only accepts a search result
+whose title (and artist, if known) actually matches what Sonos reported,
+to avoid attaching the wrong art to some other service's track.
+
 ## Troubleshooting
 
 **Discord isn't detected / presence never appears**

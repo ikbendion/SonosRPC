@@ -13,14 +13,16 @@ from .config import load_config, save_config
 from .dialogs import (
     ask_discord_client_id,
     ask_poll_interval,
+    ask_soundcloud_client_id,
     ask_spotify_credentials,
     select_speaker,
     show_message,
 )
 from .discord_rpc import DiscordRPCManager
-from .metadata import normalize
+from .metadata import SourceType, normalize
 from .sonos_client import SpeakerInfo, discover_speakers
 from .sonos_client import SonosPoller
+from .soundcloud_art import SoundCloudArtResolver
 from .spotify_art import SpotifyArtResolver
 from .startup import is_enabled as startup_is_enabled
 from .startup import set_enabled as startup_set_enabled
@@ -41,6 +43,7 @@ class App:
         self.spotify = SpotifyArtResolver(
             self.cfg.get("spotify_client_id", ""), self.cfg.get("spotify_client_secret", "")
         )
+        self.soundcloud = SoundCloudArtResolver(self.cfg.get("soundcloud_client_id", ""))
 
         self._lock = threading.RLock()
         self._stop_event = threading.Event()
@@ -135,6 +138,11 @@ class App:
             self.cfg["spotify_client_secret"] = spotify_client_secret
             self.spotify = SpotifyArtResolver(spotify_client_id, spotify_client_secret)
 
+        soundcloud_client_id = ask_soundcloud_client_id(self.cfg.get("soundcloud_client_id", ""))
+        if soundcloud_client_id is not None:
+            self.cfg["soundcloud_client_id"] = soundcloud_client_id
+            self.soundcloud = SoundCloudArtResolver(soundcloud_client_id)
+
         save_config(self.cfg)
 
     def _on_toggle_start_with_windows(self, enabled: bool) -> None:
@@ -163,6 +171,14 @@ class App:
                     spotify_art = self.spotify.lookup_album_art(track.raw_title, track.raw_artist)
                     if spotify_art:
                         track.album_art_url = spotify_art
+                elif (
+                    track.source_type == SourceType.STREAMING
+                    and not track.is_spotify
+                    and self.soundcloud.configured
+                ):
+                    sc_art = self.soundcloud.lookup_album_art(track.raw_title, track.raw_artist)
+                    if sc_art:
+                        track.album_art_url = sc_art
 
                 if self.discord and not self.discord.connected:
                     self.discord.connect()

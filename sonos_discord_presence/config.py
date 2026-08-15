@@ -21,6 +21,7 @@ DEFAULTS = {
     "start_with_windows": False,
     "spotify_client_id": "",
     "spotify_client_secret": "",
+    "soundcloud_client_id": "",
 }
 
 

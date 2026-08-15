@@ -85,6 +85,24 @@ def ask_spotify_credentials(initial_id: str = "", initial_secret: str = ""):
     return client_id.strip(), client_secret.strip()
 
 
+def ask_soundcloud_client_id(initial: str = "") -> Optional[str]:
+    """Returns the entered (possibly empty, to disable) client_id, or None
+    if the dialog was cancelled -- leave existing config untouched."""
+    root = _hidden_root()
+    try:
+        value = simpledialog.askstring(
+            "Sonos Discord Presence",
+            "SoundCloud API client_id (optional, for real album art):\n"
+            "Leave blank to disable. Only useful if you already hold a\n"
+            "SoundCloud API client_id -- public registration is closed.",
+            initialvalue=initial,
+            parent=root,
+        )
+    finally:
+        root.destroy()
+    return value.strip() if value is not None else None
+
+
 def show_message(title: str, message: str) -> None:
     root = _hidden_root()
     try:
