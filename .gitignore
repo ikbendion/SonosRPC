@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+build/_pyinstaller/
+dist/
+*.spec.bak
