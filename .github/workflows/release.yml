@@ -26,10 +26,12 @@ jobs:
         shell: bash
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "tag=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+            TAG="${{ inputs.version }}"
           else
-            echo "tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            TAG="${{ github.ref_name }}"
           fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -46,11 +48,10 @@ jobs:
         run: choco install innosetup --no-progress -y
 
       - name: Build installer
-        shell: bash
-        run: |
-          VERSION="${{ steps.version.outputs.tag }}"
-          VERSION="${VERSION#v}"
-          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" "/DMyAppVersion=$VERSION" installer/installer.iss
+        shell: cmd
+        env:
+          MYAPP_VERSION: ${{ steps.version.outputs.version }}
+        run: '"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DMyAppVersion=%MYAPP_VERSION% installer\installer.iss'
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
