@@ -19,6 +19,8 @@ DEFAULTS = {
     "poll_interval": 5,
     "idle_grace_seconds": 12,
     "start_with_windows": False,
+    "spotify_client_id": "",
+    "spotify_client_secret": "",
 }
 
 

@@ -50,6 +50,41 @@ def ask_poll_interval(initial: float = 5.0) -> Optional[float]:
     return value
 
 
+def ask_spotify_credentials(initial_id: str = "", initial_secret: str = ""):
+    """Two-step prompt for optional Spotify Developer credentials, used to
+    look up real album art. Returns (client_id, secret) -- either may be
+    an empty string if the user wants to clear/disable the feature -- or
+    None if the user cancelled (leave existing config untouched)."""
+    root = _hidden_root()
+    try:
+        client_id = simpledialog.askstring(
+            "Sonos Discord Presence",
+            "Spotify Client ID (optional, for real album art):\n"
+            "Leave blank to disable. Get one at https://developer.spotify.com/dashboard",
+            initialvalue=initial_id,
+            parent=root,
+        )
+    finally:
+        root.destroy()
+    if client_id is None:
+        return None
+
+    root = _hidden_root()
+    try:
+        client_secret = simpledialog.askstring(
+            "Sonos Discord Presence",
+            "Spotify Client Secret:",
+            initialvalue=initial_secret,
+            parent=root,
+        )
+    finally:
+        root.destroy()
+    if client_secret is None:
+        return None
+
+    return client_id.strip(), client_secret.strip()
+
+
 def show_message(title: str, message: str) -> None:
     root = _hidden_root()
     try:

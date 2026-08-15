@@ -111,13 +111,32 @@ The app runs minimized to the system tray. Right-click the icon for:
   `Paused: <track>`, `Idle`, or an error state).
 - **Select Sonos Speaker** — re-run discovery and switch which
   speaker/group is tracked.
-- **Settings...** — change the Discord Client ID or poll interval.
+- **Settings...** — change the Discord Client ID, poll interval, and
+  (optionally) Spotify Developer credentials for real album art.
 - **Start with Windows** — toggles the startup registry entry.
 - **Quit**.
 
 The tray icon itself changes to a red variant when something's wrong
 (Discord not running, speaker unreachable) so you can tell at a glance
 without opening the menu.
+
+### Real album art for Spotify (optional)
+
+Sonos always serves album art from the speaker's own local address
+(`http://<speaker-ip>:1400/getaa?...`), even for Spotify tracks — that URL
+is LAN-only, so Discord's client can never fetch it, and the app falls
+back to the generic uploaded `logo` asset instead.
+
+To show the actual album art for Spotify tracks, create a free app at the
+[Spotify Developer Dashboard](https://developer.spotify.com/dashboard),
+copy its **Client ID** and **Client Secret**, and enter them via the tray
+menu's **Settings...** (leave blank to leave the feature off — no Spotify
+calls happen unless both are set). The app then looks up each Spotify
+track's real artwork by title/artist over Spotify's public catalog search
+(no Spotify login required) and uses that URL directly instead of Sonos's
+local one. This only applies to Spotify; other streaming services (Apple
+Music, Amazon Music, etc.) still fall back to the generic asset, since
+they don't have an equivalent free public lookup.
 
 ## Troubleshooting
 

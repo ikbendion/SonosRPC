@@ -10,11 +10,18 @@ import time
 
 from . import DISPLAY_NAME
 from .config import load_config, save_config
-from .dialogs import ask_discord_client_id, ask_poll_interval, select_speaker, show_message
+from .dialogs import (
+    ask_discord_client_id,
+    ask_poll_interval,
+    ask_spotify_credentials,
+    select_speaker,
+    show_message,
+)
 from .discord_rpc import DiscordRPCManager
 from .metadata import normalize
 from .sonos_client import SpeakerInfo, discover_speakers
 from .sonos_client import SonosPoller
+from .spotify_art import SpotifyArtResolver
 from .startup import is_enabled as startup_is_enabled
 from .startup import set_enabled as startup_set_enabled
 from .tray import TrayApp, TrayState
@@ -31,6 +38,9 @@ class App:
         self.discord: DiscordRPCManager | None = None
         self.poller: SonosPoller | None = None
         self.tray: TrayApp | None = None
+        self.spotify = SpotifyArtResolver(
+            self.cfg.get("spotify_client_id", ""), self.cfg.get("spotify_client_secret", "")
+        )
 
         self._lock = threading.RLock()
         self._stop_event = threading.Event()
@@ -116,6 +126,15 @@ class App:
             if self.poller:
                 self.poller.poll_interval = interval
 
+        spotify_creds = ask_spotify_credentials(
+            self.cfg.get("spotify_client_id", ""), self.cfg.get("spotify_client_secret", "")
+        )
+        if spotify_creds is not None:
+            spotify_client_id, spotify_client_secret = spotify_creds
+            self.cfg["spotify_client_id"] = spotify_client_id
+            self.cfg["spotify_client_secret"] = spotify_client_secret
+            self.spotify = SpotifyArtResolver(spotify_client_id, spotify_client_secret)
+
         save_config(self.cfg)
 
     def _on_toggle_start_with_windows(self, enabled: bool) -> None:
@@ -139,6 +158,11 @@ class App:
         with self._lock:
             if transport_state in PLAYING_STATES:
                 self._idle_since = None
+
+                if track.is_spotify and self.spotify.configured:
+                    spotify_art = self.spotify.lookup_album_art(track.raw_title, track.raw_artist)
+                    if spotify_art:
+                        track.album_art_url = spotify_art
 
                 if self.discord and not self.discord.connected:
                     self.discord.connect()
